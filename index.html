@@ -11,7 +11,7 @@
         <button id="playButton">Play</button>
         <button id="quitButton">Quit</button>
     </div>
-    <div id="score" style="display:none;">Score: <span id="scoreValue">0</span></div>
+    <div id="score" style="display:none;">Wintons: <span id="scoreValue">0</span></div>
     <div id="canvas-container">
         <canvas id="gameCanvas"></canvas>
     </div>
@@ -100,11 +100,14 @@
             }
         }
 
-        const character = new Character(canvas.width / 2 - 25, canvas.height - 30, 50, 50); // Adjust width and height as per your character sprite
+        // Adjust the character's size and initial y position (higher from the bottom)
+        const characterWidth = 80; // Adjust the width as needed
+        const characterHeight = 80; // Adjust the height as needed
+        const character = new Character(canvas.width / 2 - characterWidth / 2, canvas.height - characterHeight - 10, characterWidth, characterHeight); // Increased y offset
 
         function spawnObject() {
-            const width = 50;  // Set your sprite width
-            const height = 50; // Set your sprite height
+            const width = 80;  // Adjust your sprite width
+            const height = 80; // Adjust your sprite height
             const x = Math.random() * (canvas.width - width);
             objects.push(new GameObject(x, 0, width, height));
         }
@@ -164,6 +167,32 @@
 
         window.addEventListener('keyup', (e) => {
             keys[e.key] = false;
+        });
+
+        // Touch controls for mobile devices
+        let touchStartX = null;
+
+        canvas.addEventListener('touchstart', (e) => {
+            touchStartX = e.touches[0].clientX;
+        });
+
+        canvas.addEventListener('touchmove', (e) => {
+            if (touchStartX !== null) {
+                const touchCurrentX = e.touches[0].clientX;
+                const deltaX = touchCurrentX - touchStartX;
+
+                if (deltaX < 0 && character.x > 0) {
+                    character.x += deltaX; // Move left
+                } else if (deltaX > 0 && character.x + character.width < canvas.width) {
+                    character.x += deltaX; // Move right
+                }
+
+                touchStartX = touchCurrentX; // Update touch start position
+            }
+        });
+
+        canvas.addEventListener('touchend', () => {
+            touchStartX = null; // Reset touch start position
         });
 
         function startGame() {
