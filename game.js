@@ -7,39 +7,45 @@ const scoreDiv = document.getElementById('score');
 const playButton = document.getElementById('playButton');
 const quitButton = document.getElementById('quitButton');
 
-// Function to resize the canvas to fit the window
+let objects = [];
+let score = 0;
+let gameOver = false;
+let keys = {};
+let speedMultiplier = 1;
+
+// Load the sprite image
+const spriteImage = new Image();
+spriteImage.src = 'image/winton.png'; // Adjust the path to your image file
+spriteImage.onload = () => {
+    console.log('Sprite image loaded successfully');
+};
+
 function resizeCanvas() {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 }
 
-// Event listener for window resize
 window.addEventListener('resize', resizeCanvas);
-
-// Initial resizing of the canvas
-resizeCanvas();
-
-let objects = [];
-let score = 0;
-let gameOver = false;
-let keys = {};
+resizeCanvas(); // Initial resize
 
 playButton.addEventListener('click', startGame);
 quitButton.addEventListener('click', () => window.close());
 
 class GameObject {
-    constructor(x, y, width, height, color) {
+    constructor(x, y, width, height) {
         this.x = x;
         this.y = y;
         this.width = width;
         this.height = height;
-        this.color = color;
-        this.velocity = 2;
+        this.baseVelocity = 2;
+    }
+
+    get velocity() {
+        return this.baseVelocity * speedMultiplier;
     }
 
     draw() {
-        ctx.fillStyle = this.color;
-        ctx.fillRect(this.x, this.y, this.width, this.height);
+        ctx.drawImage(spriteImage, this.x, this.y, this.width, this.height);
     }
 
     update() {
@@ -77,11 +83,10 @@ class Character {
 const character = new Character(canvas.width / 2 - 25, canvas.height - 30, 50, 20, 'blue');
 
 function spawnObject() {
-    const width = Math.random() * 50 + 50;
-    const height = 20;
+    const width = 50;  // Set your sprite width
+    const height = 50; // Set your sprite height
     const x = Math.random() * (canvas.width - width);
-    const color = '#' + Math.floor(Math.random() * 16777215).toString(16);
-    objects.push(new GameObject(x, 0, width, height, color));
+    objects.push(new GameObject(x, 0, width, height));
 }
 
 function detectCollision(object) {
@@ -121,6 +126,9 @@ function gameLoop() {
             if (objects[i].y + objects[i].height >= character.y) {
                 score++;
                 updateScore();
+                if (score % 20 === 0) {
+                    speedMultiplier += 0.2;  // Increase speed every 20 points
+                }
             }
             objects.splice(i, 1);
             i--;
@@ -145,6 +153,7 @@ function startGame() {
     score = 0;
     gameOver = false;
     objects = [];
+    speedMultiplier = 1; // Reset speed multiplier
     updateScore();
     gameLoop();
 }
